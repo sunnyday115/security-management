@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}まとめノート - セキュマネ学習{% endblock %}
+{% block content %}
+<h2>まとめノート</h2>
+<ul class="note-list">
+    {% for note in notes %}
+    <li>
+        <span class="category-tag">{{ note.category_name }}</span>
+        <a href="{{ url_for('note_detail', note_id=note.id) }}">{{ note.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

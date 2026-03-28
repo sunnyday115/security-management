@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}トップ - セキュマネ学習{% endblock %}
+{% block content %}
+<h2>分野一覧</h2>
+<div class="card-grid">
+    {% for cat in categories %}
+    <div class="card">
+        <h3>{{ cat.name }}</h3>
+        <p>{{ cat.description }}</p>
+        <div class="stats">
+            {% if stats[cat.id].total > 0 %}
+                正答率: {{ stats[cat.id].rate }}%（{{ stats[cat.id].correct }}/{{ stats[cat.id].total }}問）
+            {% else %}
+                まだ回答がありません
+            {% endif %}
+        </div>
+        <a href="{{ url_for('quiz', category_id=cat.id) }}" class="btn btn-primary">○×クイズに挑戦</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

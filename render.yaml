@@ -1,0 +1,22 @@
+databases:
+  - name: security-learning-db
+    plan: free
+    databaseName: security_learning
+    ipAllowList: []
+
+services:
+  - type: web
+    name: security-learning-app
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn src.app:app
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: security-learning-db
+          property: connectionString
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.11"

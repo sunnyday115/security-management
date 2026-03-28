@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}問題管理 - セキュマネ学習{% endblock %}
+{% block content %}
+<h2>問題管理</h2>
+
+<!-- ○×問題の追加 -->
+<div class="manage-section">
+    <h3>○×問題を追加</h3>
+    <form action="{{ url_for('add_question') }}" method="POST">
+        <div class="form-group">
+            <label for="q-category">分野</label>
+            <select name="category_id" id="q-category">
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="q-statement">問題文</label>
+            <textarea name="statement" id="q-statement" placeholder="例: ファイアウォールはウイルスを検出する仕組みである。"></textarea>
+        </div>
+        <div class="form-group">
+            <label>正解</label>
+            <div class="radio-group">
+                <label><input type="radio" name="correct_answer" value="1" checked> ○（正しい）</label>
+                <label><input type="radio" name="correct_answer" value="0"> ×（誤り）</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="q-explanation">解説</label>
+            <textarea name="explanation" id="q-explanation" placeholder="正解の理由や補足を記入"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">追加</button>
+    </form>
+</div>
+
+<!-- 登録済み問題一覧 -->
+<div class="manage-section">
+    <h3>登録済みの○×問題（{{ questions | length }}件）</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>分野</th>
+                <th>問題文</th>
+                <th>正解</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+            <tr>
+                <td>{{ q.category_name }}</td>
+                <td>{{ q.statement[:50] }}{% if q.statement | length > 50 %}…{% endif %}</td>
+                <td class="{{ 'answer-correct' if q.correct_answer else 'answer-wrong' }}">
+                    {{ "○" if q.correct_answer else "×" }}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_question', question_id=q.id) }}" class="btn btn-secondary" style="font-size:0.8rem; padding:0.3rem 0.8rem;">編集</a>
+                    <form action="{{ url_for('delete_question', question_id=q.id) }}" method="POST"
+                          onsubmit="return confirm('この問題を削除しますか？')" style="display:inline">
+                        <button type="submit" class="btn btn-danger">削除</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- まとめノートの追加 -->
+<div class="manage-section">
+    <h3>まとめノートを追加</h3>
+    <form action="{{ url_for('add_note') }}" method="POST">
+        <div class="form-group">
+            <label for="n-category">分野</label>
+            <select name="category_id" id="n-category">
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="n-title">タイトル</label>
+            <input type="text" name="title" id="n-title" placeholder="例: 暗号化技術の基本">
+        </div>
+        <div class="form-group">
+            <label for="n-content">内容（Markdown記法が使えます）</label>
+            <textarea name="content" id="n-content" rows="6" placeholder="ノートの本文を入力"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">追加</button>
+    </form>
+</div>
+
+<!-- 登録済みノート一覧 -->
+<div class="manage-section">
+    <h3>登録済みのまとめノート（{{ notes | length }}件）</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>分野</th>
+                <th>タイトル</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in notes %}
+            <tr>
+                <td>{{ n.category_name }}</td>
+                <td><a href="{{ url_for('note_detail', note_id=n.id) }}">{{ n.title }}</a></td>
+                <td>
+                    <a href="{{ url_for('edit_note', note_id=n.id) }}" class="btn btn-secondary" style="font-size:0.8rem; padding:0.3rem 0.8rem;">編集</a>
+                    <form action="{{ url_for('delete_note', note_id=n.id) }}" method="POST"
+                          onsubmit="return confirm('このノートを削除しますか？')" style="display:inline">
+                        <button type="submit" class="btn btn-danger">削除</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

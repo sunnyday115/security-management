@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ note.title }} - セキュマネ学習{% endblock %}
+{% block content %}
+<p style="margin-bottom: 1rem;">
+    <span class="category-tag" style="font-size: 0.8rem; background: #e0e7ff; color: #3730a3; padding: 0.15rem 0.5rem; border-radius: 4px;">{{ note.category_name }}</span>
+</p>
+<div class="note-content">
+    {{ note.content | md }}
+</div>
+<div style="margin-top: 1.5rem;">
+    <a href="{{ url_for('notes_list') }}" class="btn btn-secondary">ノート一覧に戻る</a>
+</div>
+{% endblock %}

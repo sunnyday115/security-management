@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}○×クイズ - {{ category.name }}{% endblock %}
+{% block content %}
+<div class="quiz-box">
+    <div class="category-label">{{ category.name }}</div>
+    <div class="statement">{{ question.statement }}</div>
+    <form action="{{ url_for('quiz_answer') }}" method="POST">
+        <input type="hidden" name="question_id" value="{{ question.id }}">
+        <div class="quiz-buttons">
+            <button type="submit" name="answer" value="true" class="btn btn-correct">○</button>
+            <button type="submit" name="answer" value="false" class="btn btn-wrong">×</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
