@@ -105,11 +105,12 @@ def init_db():
     else:
         os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
         conn = sqlite3.connect(DATABASE_PATH)
-        conn.execute("PRAGMA foreign_keys = ON")
         with open(os.path.join(DATA_DIR, "schema.sql"), encoding="utf-8") as f:
             conn.executescript(f.read())
+        # シードデータ投入時は外部キー制約を一時的に無効化（投入順序の制約回避）
         with open(os.path.join(DATA_DIR, "seed.sql"), encoding="utf-8") as f:
             conn.executescript(f.read())
+        conn.execute("PRAGMA foreign_keys = ON")
         conn.close()
 
 
@@ -201,11 +202,19 @@ def quiz_answer():
     )
     db.commit()
 
-    # 関連するまとめノートを取得（分野で連動、複数ノート対応）
-    related_notes = db.execute(
-        "SELECT * FROM notes WHERE category_id = ? ORDER BY id",
-        (question["category_id"],),
-    ).fetchall()
+    # 関連するまとめノートを取得（問題ごとに紐付けられたノートを優先）
+    related_note = None
+    if question["related_note_id"]:
+        related_note = db.execute(
+            "SELECT * FROM notes WHERE id = ?",
+            (question["related_note_id"],),
+        ).fetchone()
+    # related_note_id が未設定の場合はカテゴリの先頭ノートをフォールバック
+    if not related_note:
+        related_note = db.execute(
+            "SELECT * FROM notes WHERE category_id = ? ORDER BY id LIMIT 1",
+            (question["category_id"],),
+        ).fetchone()
 
     return render_template(
         "quiz_result.html",
@@ -213,7 +222,7 @@ def quiz_answer():
         question=question,
         user_answer=user_answer,
         is_correct=is_correct,
-        related_notes=related_notes,
+        related_note=related_note,
     )
 
 
@@ -289,6 +298,8 @@ def add_question():
     statement = request.form["statement"].strip()
     correct_answer = int(request.form["correct_answer"])
     explanation = request.form["explanation"].strip()
+    related_note_id = request.form.get("related_note_id")
+    related_note_id = int(related_note_id) if related_note_id else None
 
     if not statement:
         flash("問題文を入力してください。", "error")
@@ -296,10 +307,10 @@ def add_question():
 
     db.execute(
         """
-        INSERT INTO questions (category_id, statement, correct_answer, explanation)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO questions (category_id, statement, correct_answer, explanation, related_note_id)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (category_id, statement, correct_answer, explanation),
+        (category_id, statement, correct_answer, explanation, related_note_id),
     )
     db.commit()
     flash("問題を追加しました。", "success")
@@ -315,16 +326,19 @@ def edit_question(question_id: int):
         statement = request.form["statement"].strip()
         correct_answer = int(request.form["correct_answer"])
         explanation = request.form["explanation"].strip()
+        related_note_id = request.form.get("related_note_id")
+        related_note_id = int(related_note_id) if related_note_id else None
         if not statement:
             flash("問題文を入力してください。", "error")
             return redirect(url_for("edit_question", question_id=question_id))
         db.execute(
             """
             UPDATE questions
-            SET category_id = ?, statement = ?, correct_answer = ?, explanation = ?
+            SET category_id = ?, statement = ?, correct_answer = ?, explanation = ?,
+                related_note_id = ?
             WHERE id = ?
             """,
-            (category_id, statement, correct_answer, explanation, question_id),
+            (category_id, statement, correct_answer, explanation, related_note_id, question_id),
         )
         db.commit()
         flash("問題を更新しました。", "success")
@@ -339,8 +353,16 @@ def edit_question(question_id: int):
     categories = db.execute(
         "SELECT * FROM categories ORDER BY sort_order"
     ).fetchall()
+    notes = db.execute(
+        """
+        SELECT notes.*, categories.name AS category_name
+        FROM notes
+        JOIN categories ON notes.category_id = categories.id
+        ORDER BY categories.sort_order, notes.id
+        """
+    ).fetchall()
     return render_template(
-        "edit_question.html", question=question, categories=categories
+        "edit_question.html", question=question, categories=categories, notes=notes
     )
 
 

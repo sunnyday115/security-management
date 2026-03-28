@@ -30,6 +30,15 @@
             <label for="q-explanation">解説</label>
             <textarea name="explanation" id="q-explanation" placeholder="正解の理由や補足を記入"></textarea>
         </div>
+        <div class="form-group">
+            <label for="q-related-note">関連するまとめノート</label>
+            <select name="related_note_id" id="q-related-note">
+                <option value="">（未選択）</option>
+                {% for n in notes %}
+                <option value="{{ n.id }}">{{ n.category_name }} - {{ n.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">追加</button>
     </form>
 </div>

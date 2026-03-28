@@ -22,15 +22,13 @@
     </div>
     {% endif %}
 
-    {% if related_notes %}
-    {% for note in related_notes %}
+    {% if related_note %}
     <div class="related-note">
-        <h4>関連するまとめノート: {{ note.title }}</h4>
-        <div class="note-content">
-            {{ note.content | md }}
-        </div>
+        <h4>関連するまとめノート</h4>
+        <a href="{{ url_for('note_detail', note_id=related_note.id) }}" class="note-link">
+            {{ related_note.title }}
+        </a>
     </div>
-    {% endfor %}
     {% endif %}
 
     <div class="result-actions">

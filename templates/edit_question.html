@@ -27,6 +27,15 @@
             <label for="q-explanation">解説</label>
             <textarea name="explanation" id="q-explanation" rows="4">{{ question.explanation }}</textarea>
         </div>
+        <div class="form-group">
+            <label for="q-related-note">関連するまとめノート</label>
+            <select name="related_note_id" id="q-related-note">
+                <option value="">（未選択）</option>
+                {% for n in notes %}
+                <option value="{{ n.id }}" {{ 'selected' if n.id == question.related_note_id }}>{{ n.category_name }} - {{ n.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">更新</button>
         <a href="{{ url_for('manage') }}" class="btn btn-secondary">キャンセル</a>
     </form>

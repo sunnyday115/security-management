@@ -15,8 +15,10 @@ CREATE TABLE IF NOT EXISTS questions (
     statement TEXT NOT NULL,        -- 問題文
     correct_answer INTEGER NOT NULL CHECK (correct_answer IN (0, 1)),  -- 正解: 1=○, 0=×
     explanation TEXT,               -- 解説
+    related_note_id INTEGER,        -- 関連するまとめノートのID
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES categories(id),
+    FOREIGN KEY (related_note_id) REFERENCES notes(id)
 );
 
 -- まとめノート
